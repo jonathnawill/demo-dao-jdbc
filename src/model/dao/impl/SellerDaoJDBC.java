@@ -37,55 +37,65 @@ public class SellerDaoJDBC implements SellerDao {
 		// TODO Auto-generated method stub
 
 	}
-	
-	//Buscar um objeto pelo Id
+
+	// Buscar um objeto pelo Id
 	@Override
 	public Seller findById(Integer id) {
 		PreparedStatement st = null;
 		ResultSet rs = null;
-		
+
 		// Comando SQL para selecionar o vendedor e o departamento associado
 		try {
 			st = conn.prepareStatement(
 					"SELECT seller.*,department.Name as DepName " + "FROM seller INNER JOIN department "
 							+ "ON seller.DepartmentId = department.Id " + "WHERE seller.Id = ?");
-			
+
 			// Define o valor do parâmetro da consulta
 			st.setInt(1, id);
-			
+
 			// Executa a consulta
 			rs = st.executeQuery();
-			
+
 			// Verifica se a consulta retornou algum resultado
 			if (rs.next()) {
-				// Cria um objeto Department com os dados do ResultSet
-				Department dep = new Department();
-				dep.setId(rs.getInt("DepartmentId"));
-				dep.setName(rs.getString("DepName"));
-				
-				// Cria um objeto Seller com os dados do ResultSet
-				Seller obj = new Seller();
-				obj.setId(rs.getInt("Id"));
-				obj.setName(rs.getString("Name"));
-				obj.setEmail(rs.getString("Email"));
-				obj.setBirthDate(rs.getDate("BirthDate").toLocalDate());
-				obj.setBaseSalary(rs.getDouble("BaseSalary"));
-				
-				// Associa o departamento ao vendedor
-				obj.setDepartment(dep);
-				
+				Department dep = instantiateDepartment(rs);
+				Seller obj = instantiateSeller(rs, dep);
+
 				// Retorna o objeto Seller
 				return obj;
 			}
 			return null;
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
-		}
-		finally {
+		} finally {
 			DB.closeStatement(st);
 			DB.closeResultSet(rs);
 		}
 
+	}
+
+	// Metodo que cria um objeto Seller com os dados do ResultSet
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException {
+
+		Seller obj = new Seller();
+		obj.setId(rs.getInt("Id"));
+		obj.setName(rs.getString("Name"));
+		obj.setEmail(rs.getString("Email"));
+		obj.setBirthDate(rs.getDate("BirthDate").toLocalDate());
+		obj.setBaseSalary(rs.getDouble("BaseSalary"));
+
+		// Associa o departamento ao vendedor
+		obj.setDepartment(dep);
+
+		return obj;
+	}
+
+	// Metodo que cria um objeto Department com os dados do ResultSet
+	private Department instantiateDepartment(ResultSet rs) throws SQLException {
+		Department dep = new Department();
+		dep.setId(rs.getInt("DepartmentId"));
+		dep.setName(rs.getString("DepName"));
+		return dep;
 	}
 
 	@Override
