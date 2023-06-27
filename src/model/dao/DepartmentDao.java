@@ -5,6 +5,7 @@ import java.util.List;
 import model.entities.Department;
 
 // DAO funciona basicamente igual um Repository
+
 public interface DepartmentDao {
 
 	void insert(Department obj);
